@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY app/docker-requirements.txt ./requirements.txt
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/app.py ./app.py
+COPY app/functions.py ./functions.py
+
+COPY data/ ./data/
+COPY vectorstore/ ./vectorstore/
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
