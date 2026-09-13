@@ -32,6 +32,7 @@ ENV_FILE = BASE_DIR / ".env"
 
 load_dotenv(ENV_FILE)
 
+
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 if not HF_TOKEN:

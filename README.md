@@ -1,43 +1,83 @@
-# RAG Document Intelligence Assistant
+# Lenny Growth Assistant
 
-An end-to-end Retrieval-Augmented Generation (RAG) application that allows users to ask questions and extract structured information from PDF documents using semantic search and a large language model.
+This repository currently contains the original Streamlit-based RAG implementation as a preserved legacy reference, while the Phase 1 foundation for the new architecture is being established alongside it.
 
-## Overview
+## Current implementation
 
-This project implements a document-based question answering system using:
+The project now includes:
 
-- Python
-- LangChain
-- ChromaDB
-- Hugging Face Llama 3.1 8B Instruct
-- Sentence Transformers
-- Streamlit
-- Pydantic
-- Docker
+- React + TypeScript frontend foundation
+- FastAPI backend foundation
+- PostgreSQL database foundation
+- Docker Compose setup for local development
+- backend health check endpoint
+- basic automated backend test
 
-The system processes PDF documents, converts their content into semantic vector representations, retrieves relevant document chunks, and provides the retrieved context to an LLM to generate grounded responses.
+## Planned later phases
 
-## Architecture
+- Lenny transcript ingestion
+- RAG and retrieval layer
+- PostgreSQL + pgvector integration
+- sessions/messages persistence
+- agent layer
+- Ollama and cloud LLM support
+- Ship30 for 30 skill work
+- artifact generation
+- artifact viewer
+
+## Architecture (Phase 1)
 
 ```text
-PDF Documents
+React frontend
       ↓
-PyPDFLoader
+FastAPI backend
       ↓
-Text Extraction
+PostgreSQL
       ↓
-Recursive Character Chunking
-      ↓
-all-MiniLM-L6-v2 Embeddings
-      ↓
-ChromaDB Vector Store
-      ↓
-Semantic Retrieval
-      ↓
-Relevant Document Chunks
-      ↓
-Prompt + Context + Question
-      ↓
-Llama 3.1 8B Instruct
-      ↓
-Grounded Answer
+Docker Compose
+```
+
+## Legacy implementation preserved
+
+The original Streamlit application remains in place:
+
+- app/app.py
+- app/functions.py
+
+This is intentionally kept untouched for later migration and reuse of the RAG logic.
+
+## Local setup
+
+1. Copy .env.example to .env
+2. Run:
+
+```bash
+docker compose up --build
+```
+
+3. Open the frontend at:
+
+- http://localhost:5173
+
+4. Check the backend health endpoint at:
+
+- http://localhost:8000/health
+
+## Stop services
+
+```bash
+docker compose down
+```
+
+## Phase 1 validation
+
+The project includes a minimal health check test for the backend. Run:
+
+```bash
+cd backend
+python -m pytest tests/test_health.py
+```
+
+## Notes
+
+This is not a complete end-to-end assessment implementation yet; it is the Phase 1 project foundation only. Later phases will add ingestion, RAG, agent orchestration, and document/artifact workflows.

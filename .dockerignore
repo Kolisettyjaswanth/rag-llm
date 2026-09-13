@@ -1,8 +1,15 @@
 myenv/
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .ipynb_checkpoints/
 *.ipynb
 .env
+.env.local
 .git/
 .gitignore
+frontend/node_modules/
+frontend/dist/
+backend/.pytest_cache/

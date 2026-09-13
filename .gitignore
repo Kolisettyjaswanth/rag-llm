@@ -1,11 +1,27 @@
+# Python
 myenv/
+venv/
 .env
-
+.env.local
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .ipynb_checkpoints/
 
+# Project artifacts
 vectorstore/
+frontend/node_modules/
+frontend/dist/
+backend/.pytest_cache/
+backend/__pycache__/
+**/__pycache__/
 
+# OS/editor
 .DS_Store
 Thumbs.db
+.vscode/
+
+# Docker / temp
+*.log
+*.tmp
