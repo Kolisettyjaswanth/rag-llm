@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.routes import router as api_router
 from app.db.database import engine
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
@@ -40,6 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(api_router)
 
 
 @app.get("/")

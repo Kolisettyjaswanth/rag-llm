@@ -78,6 +78,52 @@ cd backend
 python -m pytest tests/test_health.py
 ```
 
+## Phase 2 - Database Persistence
+
+The project now includes the Phase 2 persistence foundation for PostgreSQL-backed session and message storage.
+
+### Database schema
+
+- users
+- sessions
+- messages
+- documents
+- chunks
+
+The chunk table includes a pgvector-compatible embedding column prepared for later retrieval and RAG work.
+
+### Technologies used
+
+- SQLAlchemy ORM
+- Alembic migrations
+- PostgreSQL + pgvector
+- FastAPI persistence routes
+
+### Migration workflow
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+### Relevant API endpoints
+
+```text
+POST /api/sessions
+GET /api/sessions/{session_id}
+GET /api/sessions/{session_id}/messages
+POST /api/sessions/{session_id}/messages
+```
+
+### Test workflow
+
+```bash
+docker compose exec backend python -m pytest tests/test_persistence.py -q
+```
+
+### Notes
+
+This does not implement RAG, embedding generation, vector similarity search, or later agent features. Those remain planned for future phases.
+
 ## Notes
 
 This is not a complete end-to-end assessment implementation yet; it is the Phase 1 project foundation only. Later phases will add ingestion, RAG, agent orchestration, and document/artifact workflows.
