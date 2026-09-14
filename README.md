@@ -7,7 +7,7 @@ A Dockerized React and FastAPI application for grounded Lenny's Podcast research
 - React + TypeScript chat UI
 - FastAPI API with persistent sessions and messages
 - PostgreSQL with pgvector
-- 272 ingested transcript documents and 31,595 stored chunks in the current local database
+- Transcript ingestion and vector indexing for Lenny's Podcast transcripts
 - Semantic retrieval with a 0.45 similarity threshold
 - Deterministic RAG, Ship30, and artifact skills
 - Ollama as the default local LLM
@@ -181,6 +181,26 @@ Stop the stack:
 docker compose down
 ```
 
+## Observability
+
+Use Docker and the health endpoint to inspect the running application:
+
+```powershell
+docker compose ps
+docker compose logs backend
+docker compose logs postgres
+Invoke-RestMethod http://localhost:8000/health
+```
+
+To follow service logs while reproducing a request:
+
+```powershell
+docker compose logs -f backend
+docker compose logs -f postgres
+```
+
+The backend logs report application startup, HTTP requests, and logged agent/database failures. PostgreSQL logs report database startup and server events. The `/health` endpoint reports backend status and database connectivity. The project does not claim structured logging or a separate metrics/tracing system.
+
 ## Database and Migrations
 
 ```powershell
@@ -260,7 +280,7 @@ LLM_PROVIDER=ollama
 
 When `LLM_PROVIDER=claude-agent-sdk` or `claude` is selected, `GrowthAgent` creates `ClaudeAgentExecutor` from the application agent layer. That executor calls `claude_agent_sdk.query()` with `ClaudeAgentOptions`. Claude authentication and any required Claude Code installation are external prerequisites; Claude mode does not work without them and is not required for the default local/demo setup.
 
-The Hugging Face provider is only an optional provider path and requires `HF_TOKEN` when selected. No cloud provider is required for the default demo.
+The Hugging Face provider is only an optional provider path and requires `HF_TOKEN` when selected. No cloud provider is required for the default demo. The application does not automatically switch providers when the configured provider is unavailable; provider failures are returned as API errors. Ollama is the default local/demo provider.
 
 ## API
 
