@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
-PGVECTOR_DIMENSION = int(os.getenv("PGVECTOR_DIMENSION", "1536"))
+PGVECTOR_DIMENSION = int(os.getenv("PGVECTOR_DIMENSION", "384"))
 
 
 class User(Base):

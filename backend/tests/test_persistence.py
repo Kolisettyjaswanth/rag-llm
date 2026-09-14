@@ -104,3 +104,50 @@ def test_empty_message_content_rejected():
     session = client.post("/api/sessions", json={"title": "Empty content"}).json()
     response = client.post(f"/api/sessions/{session['id']}/messages", json={"role": "user", "content": ""})
     assert response.status_code == 422
+
+
+def test_chat_failure_returns_service_unavailable_and_rolls_back_user_message(monkeypatch):
+    session = client.post("/api/sessions", json={"title": "Chat failure"}).json()
+    session_id = session["id"]
+
+    def fail_answer(*args, **kwargs):
+        raise RuntimeError("Ollama unavailable")
+
+    monkeypatch.setattr("app.api.routes.growth_agent.execute", fail_answer)
+
+    response = client.post(
+        "/api/chat",
+        json={"session_id": session_id, "message": "Will this fail cleanly?"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "The chat service is temporarily unavailable."
+
+    messages = client.get(f"/api/sessions/{session_id}/messages")
+    assert messages.status_code == 200
+    assert messages.json() == []
+
+
+def test_chat_returns_agent_metadata_and_artifact(monkeypatch):
+    session = client.post("/api/sessions", json={"title": "Agent chat"}).json()
+
+    monkeypatch.setattr(
+        "app.api.routes.growth_agent.execute",
+        lambda **kwargs: {
+            "answer": "Generated artifact",
+            "sources": [],
+            "skill": "artifact",
+            "route_reason": "The request asks for a rendered artifact.",
+            "artifact": {"type": "html", "content": "<html></html>"},
+        },
+    )
+
+    response = client.post(
+        "/api/chat",
+        json={"session_id": session["id"], "message": "Create a webpage"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["skill"] == "artifact"
+    assert response.json()["route_reason"]
+    assert response.json()["artifact"]["type"] == "html"

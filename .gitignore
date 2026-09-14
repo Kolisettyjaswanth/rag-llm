@@ -5,7 +5,6 @@ venv/
 .env.local
 __pycache__/
 *.pyc
-*.pyo
 *.pyd
 .ipynb_checkpoints/
 
@@ -25,3 +24,7 @@ Thumbs.db
 # Docker / temp
 *.log
 *.tmp
+
+ingestion/data/lenny_transcripts/
+
+ingestion/data/lenny_transcripts/

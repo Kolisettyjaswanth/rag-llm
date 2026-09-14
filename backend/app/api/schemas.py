@@ -5,6 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+
 allowed_roles = Literal["user", "assistant", "system"]
 
 
@@ -38,3 +39,42 @@ class MessageRead(BaseModel):
     role: allowed_roles
     content: str
     created_at: datetime
+
+
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str = Field(..., min_length=1, max_length=20000)
+
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("message cannot be empty")
+        return value.strip()
+
+
+class ChatSource(BaseModel):
+    chunk_id: str
+    document_id: str
+    chunk_index: int
+    content: str
+    similarity: float
+    guest: str | None = None
+    title: str | None = None
+    youtube_url: str | None = None
+    video_id: str | None = None
+    publish_date: str | None = None
+
+
+class ArtifactResponse(BaseModel):
+    type: Literal["html", "markdown"]
+    content: str
+
+
+class ChatResponse(BaseModel):
+    message_id: str
+    answer: str
+    sources: list[ChatSource]
+    skill: str
+    route_reason: str
+    artifact: ArtifactResponse | None = None
