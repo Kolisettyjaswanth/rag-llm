@@ -46,6 +46,84 @@ The legacy Streamlit implementation remains in `app/` as a reference. The active
 - Local LLM: Ollama, default model `llama3.1:8b`
 - Optional cloud/provider paths: Claude Agent SDK and Hugging Face
 
+## Fresh-Clone Setup
+
+The complete setup sequence for a new evaluator is:
+
+1. Clone the application repository and enter it:
+
+    ```powershell
+    git clone https://github.com/Kolisettyjaswanth/rag-llm.git
+    cd rag-llm
+    Copy-Item .env.example .env
+    ```
+
+2. Clone the transcript dataset separately. It is intentionally not committed to this repository:
+
+    ```powershell
+    git clone https://github.com/ChatPRD/lennys-podcast-transcripts.git .\lenny-podcast-transcripts
+    ```
+
+    In Git Bash, the equivalent is:
+
+    ```bash
+    git clone https://github.com/ChatPRD/lennys-podcast-transcripts.git ./lenny-podcast-transcripts
+    ```
+
+3. Set `TRANSCRIPTS_HOST_PATH` in `.env` to the absolute path of the cloned dataset. For example, from the application repository in PowerShell:
+
+    ```powershell
+    (Get-Location).Path + '\lenny-podcast-transcripts'
+    ```
+
+    Then set the resulting Windows path in `.env`, for example:
+
+    ```text
+    TRANSCRIPTS_HOST_PATH=C:/Users/<your-user>/rag_llms/lenny-podcast-transcripts
+    ```
+
+    The dataset must have this structure:
+
+    ```text
+    <transcript-root>/
+         <episode-directory>/
+              transcript.md
+    ```
+
+    Docker mounts the configured host directory read-only at:
+
+    ```text
+    /app/lenny_transcripts
+    ```
+
+4. Install and start Ollama on the host, then prepare the mandatory local demo model:
+
+    ```powershell
+    ollama pull llama3.1:8b
+    ollama list
+    ```
+
+5. Build and start Docker services:
+
+    ```powershell
+    docker compose up -d --build
+    ```
+
+6. Apply database migrations and ingest the transcript dataset:
+
+    ```powershell
+    docker compose exec backend alembic upgrade head
+    docker compose exec backend python -m app.ingestion.run_ingestion
+    ```
+
+7. Run the backend tests:
+
+    ```powershell
+    docker compose exec backend python -m pytest -q
+    ```
+
+8. Open the frontend at http://localhost:5173.
+
 ## Prerequisites and Windows Setup
 
 Install Docker Desktop with WSL2 integration and install Ollama on Windows.
@@ -59,13 +137,13 @@ ollama list
 
 Keep Ollama running on the host. Docker reaches it through `host.docker.internal`.
 
-Copy the environment template:
+Copy the environment template if you have not already done so:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Set `TRANSCRIPTS_HOST_PATH` to the host directory whose immediate child directories contain `transcript.md` files. The container sees that directory as `/app/lenny_transcripts`.
+For the complete dataset clone and configuration steps, see [Fresh-Clone Setup](#fresh-clone-setup). `TRANSCRIPTS_HOST_PATH` must point to the host directory whose immediate child directories contain `transcript.md` files. The container sees that directory as `/app/lenny_transcripts`.
 
 ## Environment Variables
 
@@ -112,6 +190,30 @@ docker compose exec backend alembic current
 
 The schema contains `users`, `sessions`, `messages`, `documents`, and `chunks`. Chunks contain JSON transcript metadata and 384-dimensional embeddings.
 
+## Transcript Dataset Setup
+
+The transcript dataset is intentionally excluded from Git because it is large source data. A fresh evaluator must clone the public dataset separately:
+
+```powershell
+git clone https://github.com/ChatPRD/lennys-podcast-transcripts.git .\lenny-podcast-transcripts
+```
+
+Configure `.env` with the host path to that clone:
+
+```text
+TRANSCRIPTS_HOST_PATH=C:/Users/<your-user>/rag_llms/lenny-podcast-transcripts
+```
+
+Expected host structure:
+
+```text
+<transcript-root>/
+    <episode-directory>/
+        transcript.md
+```
+
+The Docker backend mounts `<transcript-root>` read-only as `/app/lenny_transcripts`, so the active ingestion runner discovers files using `*/transcript.md` beneath that container path.
+
 ## Transcript Ingestion
 
 The mounted transcript structure must be:
@@ -126,7 +228,7 @@ The ingestion command discovers `*/transcript.md`, cleans timestamps, chunks tra
 docker compose exec backend python -m app.ingestion.run_ingestion
 ```
 
-The transcript dataset is intentionally ignored by Git.
+The transcript dataset remains intentionally ignored by Git. It must be present at the configured host path before running ingestion.
 
 ## RAG Behavior
 
@@ -150,15 +252,15 @@ The server removes common active/external content including scripts, iframes, ob
 
 ## Claude Agent SDK and Cloud Providers
 
-Ollama remains the default and requires no cloud credential:
+Anthropic Claude through the Claude Agent SDK is the assignment's cloud LLM/agent integration. Ollama with Llama 3.1 is the mandatory local/demo provider and remains the default; it requires no cloud credential:
 
 ```text
 LLM_PROVIDER=ollama
 ```
 
-When `LLM_PROVIDER=claude-agent-sdk` or `claude` is selected, `GrowthAgent` creates `ClaudeAgentExecutor` from the application agent layer. That executor calls `claude_agent_sdk.query()` with `ClaudeAgentOptions`. Claude authentication and any required Claude Code installation are external prerequisites; Claude mode is not expected to work without them.
+When `LLM_PROVIDER=claude-agent-sdk` or `claude` is selected, `GrowthAgent` creates `ClaudeAgentExecutor` from the application agent layer. That executor calls `claude_agent_sdk.query()` with `ClaudeAgentOptions`. Claude authentication and any required Claude Code installation are external prerequisites; Claude mode does not work without them and is not required for the default local/demo setup.
 
-The Hugging Face provider is also optional and requires `HF_TOKEN` when selected. No cloud provider is required for the default demo.
+The Hugging Face provider is only an optional provider path and requires `HF_TOKEN` when selected. No cloud provider is required for the default demo.
 
 ## API
 

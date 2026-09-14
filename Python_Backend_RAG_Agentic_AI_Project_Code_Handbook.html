@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python + Backend + RAG + Agentic AI Project Code Handbook</title>
+<style>
+@page { size: A4; margin: 17mm 15mm 18mm; @bottom-right { content: "Page " counter(page); font-size: 8pt; color: #64748b; } }
+:root { --ink:#172033; --muted:#526176; --line:#d9e1ec; --blue:#155e75; --blue2:#e0f2fe; --gold:#9a6700; --gold2:#fff7d6; --code:#111827; --paper:#ffffff; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:var(--paper); font-family: Georgia, "Times New Roman", serif; line-height:1.42; font-size:10pt; }
+h1,h2,h3,h4 { font-family: Arial, Helvetica, sans-serif; color:#0f3d56; line-height:1.15; break-after:avoid; }
+h1 { font-size:30pt; margin:0 0 12pt; }
+h2 { font-size:19pt; border-bottom:2px solid #0e7490; padding-bottom:5pt; margin-top:24pt; }
+h3 { font-size:13pt; margin-top:16pt; color:#155e75; }
+h4 { font-size:10.5pt; margin-bottom:4pt; }
+p { margin:5pt 0 8pt; }
+a { color:#0e7490; }
+.cover { min-height:245mm; display:flex; flex-direction:column; justify-content:center; padding:18mm; border:1px solid var(--line); background:linear-gradient(135deg,#f0f9ff,#ffffff 58%,#fff7ed); }
+.subtitle { font:16pt Arial,sans-serif; color:#475569; margin:0 0 24pt; }
+.meta { font:10pt Arial,sans-serif; color:var(--muted); border-top:1px solid var(--line); padding-top:12pt; }
+.note { padding:9pt 11pt; border-left:4px solid #0e7490; background:var(--blue2); margin:10pt 0; }
+.warning { padding:9pt 11pt; border-left:4px solid #ca8a04; background:var(--gold2); margin:10pt 0; }
+.toc { page-break-after:always; }
+.toc ol { columns:2; column-gap:28pt; padding-left:22pt; }
+.toc li { margin:4pt 0; font-family:Arial,sans-serif; font-size:9pt; }
+.section { break-before:page; }
+.section:first-of-type { break-before:auto; }
+pre { white-space:pre-wrap; overflow-wrap:anywhere; background:var(--code); color:#e5e7eb; padding:9pt 11pt; border-radius:4pt; font:8.2pt Consolas,"Courier New",monospace; line-height:1.35; break-inside:avoid; }
+code { font-family:Consolas,"Courier New",monospace; font-size:.9em; background:#eef2f7; padding:1pt 3pt; border-radius:2pt; }
+pre code { background:none; padding:0; }
+table { width:100%; border-collapse:collapse; margin:8pt 0 12pt; font-size:8.4pt; break-inside:avoid; }
+th { background:#0f3d56; color:#fff; font-family:Arial,sans-serif; text-align:left; }
+th,td { border:1px solid var(--line); padding:5pt 6pt; vertical-align:top; }
+tr:nth-child(even) td { background:#f8fafc; }
+.checkpoint { border:1px solid var(--line); margin:9pt 0 14pt; break-inside:avoid; }
+.checkpoint h4 { background:#e0f2fe; margin:0; padding:7pt 9pt; }
+.cpgrid { display:grid; grid-template-columns:145pt 1fr; }
+.cpgrid div { border-top:1px solid var(--line); padding:4pt 7pt; }
+.cpgrid div:nth-child(odd) { font-family:Arial,sans-serif; font-weight:bold; color:#155e75; background:#f8fafc; }
+.kicker { font:700 8pt Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#0e7490; }
+.small { color:var(--muted); font-size:8.5pt; }
+.flow { font:700 9pt Arial,sans-serif; text-align:center; background:#f8fafc; border:1px solid var(--line); padding:10pt; margin:10pt 0; }
+.two { columns:2; column-gap:22pt; }
+.card { border:1px solid var(--line); padding:8pt 10pt; margin:7pt 0; break-inside:avoid; }
+.card h4 { margin-top:0; }
+.pagebreak { break-after:page; }
+.footer-note { font:8pt Arial,sans-serif; color:var(--muted); margin-top:20pt; }
+</style>
+</head>
+<body>
+<section class="cover">
+<div class="kicker">Verified source-grounded study handbook</div>
+<h1>Python + Backend + RAG + Agentic AI Project Code Handbook</h1>
+<p class="subtitle">Learning Python by Reading the Lenny Growth Assistant Codebase</p>
+<p>This handbook teaches Python through the current repository: its FastAPI request lifecycle, PostgreSQL/pgvector persistence, transcript ingestion, embeddings, retrieval, Ollama and Claude execution paths, deterministic agent routing, skills, tests, and Docker workflow.</p>
+<div class="note"><b>Accuracy rule.</b> Code examples are short excerpts verified against the current repository. When a helper is present but not on the active execution path, it is marked <b>documentation/reference only</b>. No secrets, tokens, passwords, transcript contents, or private environment values are included.</div>
+<div class="meta"><b>Current project facts:</b> Python 3.14.4 on the host; Python 3.11 in the backend image; 21 backend tests currently pass; Ollama is the default provider; embedding model is all-MiniLM-L6-v2 with 384 dimensions.</div>
+</section>
+
+<section class="toc">
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#scope">How to use this handbook</a></li>
+<li><a href="#environment">A. Python environment</a></li>
+<li><a href="#structure">B. Project structure and execution map</a></li>
+<li><a href="#core">C. Python constructs in this codebase</a></li>
+<li><a href="#packages">D. Actual package reference</a></li>
+<li><a href="#functions">E. Function-by-function reference</a></li>
+<li><a href="#classes">F. Class-by-class reference</a></li>
+<li><a href="#fastapi">G. FastAPI Python code</a></li>
+<li><a href="#database">H. Database Python code</a></li>
+<li><a href="#rag">I. RAG Python code</a></li>
+<li><a href="#agent">J. Agentic AI Python code</a></li>
+<li><a href="#providers">K. LLM provider Python code</a></li>
+<li><a href="#testing">L. Testing Python</a></li>
+<li><a href="#debugging">M. Error and debugging handbook</a></li>
+<li><a href="#execution">N. Complete execution map</a></li>
+<li><a href="#packagemap">O. Package to project-role map</a></li>
+<li><a href="#functionmap">P. Function sequence map</a></li>
+<li><a href="#beginner">Q. Read the code like a beginner</a></li>
+<li><a href="#memorize">R. Memorize versus understand</a></li>
+<li><a href="#interview">S. Interview preparation</a></li>
+<li><a href="#master">Master checkpoint</a></li>
+</ol>
+<p class="footer-note">Source inventory covers backend/app, backend/tests, backend/alembic, backend requirements/configuration, Docker configuration, and the preserved legacy app/ directory. The transcript dataset, vectorstore, node_modules, and virtual-environment packages are not treated as project source.</p>
+</section>
+
+<section id="scope" class="section">
+<h2>How to Use This Handbook</h2>
+<p>Read in execution order. For each concept, first read the short source snippet, then follow the checkpoint questions. Finally open the referenced file and trace the next call. The goal is not to memorize the whole repository; it is to connect Python syntax to the RAG request lifecycle.</p>
+<div class="flow">React → FastAPI route → Pydantic validation → SQLAlchemy session → GrowthAgent → skill → RAGService → pgvector retrieval → LLM executor → persisted messages → JSON response</div>
+<h3>Verified versus reference-only code</h3>
+<table><tr><th>Area</th><th>Current status</th></tr>
+<tr><td>Active ingestion discovery</td><td><code>backend/app/ingestion/run_ingestion.py</code> uses <code>TRANSCRIPTS_ROOT.glob("*/transcript.md")</code>.</td></tr>
+<tr><td>Loader discovery helper</td><td><code>backend/app/ingestion/loader.py::find_transcript_files</code> still contains <code>episodes/*/transcript.md</code>. Documentation/reference only unless called directly; the active runner does not call it.</td></tr>
+<tr><td>Legacy Streamlit app</td><td><code>app/app.py</code> and <code>app/functions.py</code> are preserved reference code, not the active Docker web path.</td></tr>
+<tr><td>Claude SDK</td><td>Installed and structurally wired through <code>ClaudeAgentExecutor</code>; real cloud authentication is external and not part of the default Ollama workflow.</td></tr>
+</table>
+</section>
+
+<section id="environment" class="section">
+<h2>A. Python Environment</h2>
+<p><b>Host:</b> the verified host interpreter reports Python 3.14.4. The repository contains <code>myenv/</code>, a local virtual environment ignored by Git. <b>Container:</b> <code>backend/Dockerfile</code> uses <code>python:3.11-slim</code>, installs <code>backend/requirements.txt</code>, and runs Uvicorn. The host environment and container environment are separate; Docker is authoritative for backend tests and runtime.</p>
+<pre><code># Useful local inspection commands
+python --version
+py --version
+python -m venv myenv
+.\myenv\Scripts\Activate.ps1
+python -m pip install -r backend\requirements.txt
+python -m pip list
+pip show fastapi
+
+# Authoritative project commands
+docker compose up -d --build backend
+docker compose exec backend python -m pytest -q</code></pre>
+<div class="checkpoint"><h4>CONCEPT: Python environment, virtualenv, pip, pinned requirements</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>A Python interpreter plus an isolated package environment. <code>pip</code> installs packages listed in a requirements file.</div>
+<div>2. WHAT DOES IT DO?</div><div>It makes imports such as FastAPI, SQLAlchemy, pgvector, and sentence-transformers available to the process.</div>
+<div>3. WHY DID I USE IT IN THIS PROJECT?</div><div>RAG and API behavior depend on compatible versions across the backend image and tests.</div>
+<div>4. HOW DID I USE IT?</div><div>Versions are pinned in <code>backend/requirements.txt</code>; Docker installs them during image build.</div>
+<div>5. WHERE IS IT USED?</div><div><code>backend/Dockerfile</code>, <code>backend/requirements.txt</code>, ignored <code>myenv/</code>.</div>
+<div>6. HOW DOES IT CONNECT TO THE REST OF THE PROJECT?</div><div>The interpreter loads the application modules and their third-party dependencies.</div>
+<div>7. HOW DOES IT HELP COMPLETE THE RAG PROJECT?</div><div>It supplies the embedding, chunking, database, API, and testing libraries.</div>
+<div>8. WHY DID WE USE THIS APPROACH?</div><div>Reproducible Docker builds and explicit dependency versions are easier to validate than an unmanaged global environment.</div>
+<div>9. WHY NOT THE MAIN ALTERNATIVES?</div><div>A system-wide install risks conflicts; an unpinned requirements file risks drift.</div>
+<div>10. WHAT WOULD BREAK IF IT WERE REMOVED?</div><div>Imports fail and the backend image cannot start or test.</div>
+<div>11. COMMON FAILURE / ERROR</div><div>Dependency resolution, Python-version, CPU-wheel, or package API incompatibility.</div>
+<div>12. HOW TO DEBUG OR TEST IT</div><div>Run <code>python --version</code>, <code>pip show</code>, rebuild Docker, and run pytest inside the backend container.</div>
+<div>13. INTERVIEW ANSWER</div><div>“I separate host tooling from a pinned Python 3.11 Docker runtime so the API and RAG dependencies are reproducible.”</div>
+</div></div>
+</section>
+
+<section id="structure" class="section">
+<h2>B. Project Structure and Execution Flow</h2>
+<table><tr><th>Path</th><th>Role and next call</th></tr>
+<tr><td><code>backend/app/main.py</code></td><td>Creates FastAPI, loads environment variables, configures CORS, includes API routes, and exposes health/root endpoints.</td></tr>
+<tr><td><code>backend/app/api/routes.py</code></td><td>Validates requests through schemas, gets DB sessions, persists messages, calls <code>GrowthAgent</code>, and returns JSON.</td></tr>
+<tr><td><code>backend/app/api/schemas.py</code></td><td>Pydantic request/response models and field validation.</td></tr>
+<tr><td><code>backend/app/db/database.py</code></td><td>Creates SQLAlchemy engine/session factory and FastAPI database dependency.</td></tr>
+<tr><td><code>backend/app/db/models.py</code></td><td>ORM tables, relationships, constraints, and pgvector column.</td></tr>
+<tr><td><code>backend/app/ingestion/</code></td><td>Loads transcripts, cleans, chunks, embeds, stores, and retrieves vectors.</td></tr>
+<tr><td><code>backend/app/services/rag_service.py</code></td><td>Maps retrieved rows to sources, builds context, and asks the LLM for grounded answers.</td></tr>
+<tr><td><code>backend/app/llm/</code></td><td>Defines provider interface, Ollama, Hugging Face, and Claude executor compatibility.</td></tr>
+<tr><td><code>backend/app/agent/</code></td><td>Routes user intent and invokes RAG, Ship30, or Artifact skills.</td></tr>
+<tr><td><code>backend/tests/</code></td><td>Health, persistence, API, routing, artifact security, Claude-structure, and retrieval-contract tests.</td></tr>
+</table>
+<pre><code>main.py
+  -> api.routes.chat()
+      -> GrowthAgent.execute()
+          -> AgentRouter.route()
+          -> RAGSkill / Ship30Skill / ArtifactSkill
+              -> RAGService.retrieve()
+                  -> TranscriptRetriever.search()
+                      -> TranscriptEmbedder.embed_text()
+                      -> PostgreSQL pgvector SQL
+              -> LLMProvider.generate()
+      -> Message commit + ChatResponse</code></pre>
+</section>
+
+<section id="core" class="section">
+<h2>C. Python Constructs Actually Used</h2>
+<h3>Variables, strings, lists, dictionaries, tuples, booleans, and None</h3>
+<pre><code>messages = []
+payload = {"model": self.model, "messages": messages, "stream": False}
+artifact = result.get("artifact")
+</code></pre>
+<div class="checkpoint"><h4>CONCEPT: Python collections and None</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>Variables bind names to objects; lists are ordered mutable collections; dictionaries map keys to values; tuples are fixed ordered values; <code>None</code> represents absence.</div>
+<div>2. WHAT DOES IT DO?</div><div>The provider builds a list of chat messages and a JSON-compatible dictionary.</div>
+<div>3. WHY DID I USE IT?</div><div>HTTP payloads and source records are naturally represented as nested Python collections.</div>
+<div>4. HOW DID I USE IT?</div><div><code>messages.append(...)</code>, dictionary literals, <code>result.get(...)</code>, and optional artifact values.</div>
+<div>5. WHERE IS IT USED?</div><div><code>ollama_provider.py</code>, <code>rag_service.py</code>, <code>routes.py</code>, schemas/tests.</div>
+<div>6. HOW DOES IT CONNECT?</div><div>Collections carry user input, prompts, source metadata, and API serialization between layers.</div>
+<div>7. HOW DOES IT HELP RAG?</div><div>Retrieved chunks become source dictionaries and prompt context.</div>
+<div>8. WHY THIS APPROACH?</div><div>It matches JSON and SQL result shapes without unnecessary wrapper classes for every intermediate value.</div>
+<div>9. WHY NOT ALTERNATIVES?</div><div>A custom object for every payload would add ceremony; raw strings would lose structure.</div>
+<div>10. WHAT BREAKS?</div><div>Malformed keys or missing values can produce invalid prompts, responses, or provider payloads.</div>
+<div>11. COMMON FAILURE / ERROR</div><div><code>KeyError</code>, wrong value types, mutable-list reuse, or <code>None</code> passed to code expecting text.</div>
+<div>12. DEBUG / TEST</div><div>Print safe shape information, assert keys in tests, and inspect response models.</div>
+<div>13. INTERVIEW ANSWER</div><div>“The project uses dictionaries and lists at integration boundaries because providers and HTTP responses are JSON-shaped.”</div>
+</div></div>
+
+<h3>Functions, parameters, defaults, returns, kwargs, and lambdas</h3>
+<pre><code>def search(self, db: Session, query: str, top_k: int = 5,
+           min_similarity: float = 0.45) -> list[dict]:
+    ...
+
+lambda **kwargs: []</code></pre>
+<div class="checkpoint"><h4>CONCEPT: functions and typed parameters</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>A reusable block with named inputs and a return contract.</div>
+<div>2. WHAT DOES IT DO?</div><div><code>search</code> accepts a DB session and query options, then returns row dictionaries.</div>
+<div>3. WHY DID I USE IT?</div><div>Functions isolate ingestion, retrieval, API, provider, and skill responsibilities.</div>
+<div>4. HOW DID I USE IT?</div><div>Required parameters, default <code>top_k</code>/<code>min_similarity</code>, annotations, and explicit returns.</div>
+<div>5. WHERE IS IT USED?</div><div>Every active backend layer; tests also use lambdas as small fake collaborators.</div>
+<div>6. HOW DOES IT CONNECT?</div><div>Each function is a call-graph edge, such as route → agent → skill → service.</div>
+<div>7. HOW DOES IT HELP RAG?</div><div>It makes each RAG stage independently testable.</div>
+<div>8. WHY THIS APPROACH?</div><div>Small functions make side effects and inputs visible.</div>
+<div>9. WHY NOT ALTERNATIVES?</div><div>A single monolithic request function would be harder to test and reason about.</div>
+<div>10. WHAT BREAKS?</div><div>Changing a signature without updating callers causes runtime or type errors.</div>
+<div>11. COMMON FAILURE / ERROR</div><div>Wrong argument names, missing dependencies, incorrect return shape.</div>
+<div>12. DEBUG / TEST</div><div>Use focused unit tests with fake DB/LLM objects and inspect call arguments.</div>
+<div>13. INTERVIEW ANSWER</div><div>“Typed functions make the pipeline explicit: query in, embeddings and rows through retrieval, structured answer out.”</div>
+</div></div>
+
+<h3>Classes, self, constructors, inheritance, ABC, dataclasses, and static methods</h3>
+<pre><code>class LLMProvider(ABC):
+    @abstractmethod
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
+        raise NotImplementedError
+
+@dataclass(frozen=True)
+class AgentRoute:
+    skill: str
+    reason: str
+
+class OllamaProvider(LLMProvider):
+    def __init__(self) -> None:
+        self.base_url = os.getenv("OLLAMA_BASE_URL", ...)</code></pre>
+<div class="checkpoint"><h4>CONCEPT: objects, inheritance, abstract interfaces, dataclasses</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>A class defines object behavior; inheritance reuses/interface-matches behavior; an ABC declares required methods; a dataclass stores structured values.</div>
+<div>2. WHAT DOES IT DO?</div><div><code>LLMProvider</code> standardizes <code>generate</code>; Ollama and Claude implement it; <code>AgentRoute</code> stores route data.</div>
+<div>3. WHY DID I USE IT?</div><div>Skills can depend on one LLM interface while the concrete provider changes.</div>
+<div>4. HOW DID I USE IT?</div><div>Constructors assign configuration; methods use <code>self</code>; providers inherit from <code>LLMProvider</code>.</div>
+<div>5. WHERE IS IT USED?</div><div><code>backend/app/llm</code>, <code>agent/router.py</code>, services and skills.</div>
+<div>6. HOW DOES IT CONNECT?</div><div>The agent injects an LLM object into RAG/Ship30/Artifact skills.</div>
+<div>7. HOW DOES IT HELP RAG?</div><div>RAG generation is decoupled from the specific model transport.</div>
+<div>8. WHY THIS APPROACH?</div><div>Polymorphism allows Ollama by default and Claude/Hugging Face as alternatives.</div>
+<div>9. WHY NOT ALTERNATIVES?</div><div>Hard-coding HTTP calls in every skill would duplicate provider logic.</div>
+<div>10. WHAT BREAKS?</div><div>A provider that fails to implement <code>generate</code> cannot satisfy the interface.</div>
+<div>11. COMMON FAILURE / ERROR</div><div>Wrong provider selection, missing environment variables, or incompatible response shapes.</div>
+<div>12. DEBUG / TEST</div><div>Inject <code>FakeLLM</code>; test one interface call and provider-specific configuration.</div>
+<div>13. INTERVIEW ANSWER</div><div>“The abstract provider is a narrow polymorphic contract; skills depend on generation, not on Ollama’s transport details.”</div>
+</div></div>
+
+<h3>Exceptions, try/except, context managers, logging, and decorators</h3>
+<pre><code>try:
+    db.add(user_message)
+    result = growth_agent.execute(db=db, message=request.message)
+    db.commit()
+except SQLAlchemyError:
+    db.rollback()
+    logger.exception("Database failure while processing chat request")
+    raise HTTPException(status_code=503, ...)
+
+with engine.connect() as connection:
+    connection.execute(text("SELECT 1"))</code></pre>
+<div class="checkpoint"><h4>CONCEPT: error handling and resource management</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>Exceptions represent failures; <code>try/except</code> handles them; <code>with</code> manages setup/cleanup.</div>
+<div>2. WHAT DOES IT DO?</div><div>The chat route rolls back partial DB work and returns a safe 503; health closes its DB connection.</div>
+<div>3. WHY DID I USE IT?</div><div>LLM/network/database failures are expected operational conditions.</div>
+<div>4. HOW DID I USE IT?</div><div>Catch SQLAlchemy and general agent failures, log stack traces server-side, rollback, raise HTTPException.</div>
+<div>5. WHERE IS IT USED?</div><div><code>routes.py</code>, <code>main.py</code>, <code>database.py</code>, provider code.</div>
+<div>6. HOW DOES IT CONNECT?</div><div>It protects transaction boundaries around agent execution.</div>
+<div>7. HOW DOES IT HELP RAG?</div><div>A failed Ollama call cannot leave a user-only message committed.</div>
+<div>8. WHY THIS APPROACH?</div><div>Users get a stable API error while operators retain diagnostics.</div>
+<div>9. WHY NOT ALTERNATIVES?</div><div>Ignoring exceptions risks corrupted state; exposing raw traces leaks internals.</div>
+<div>10. WHAT BREAKS?</div><div>Without rollback, later queries may see a failed transaction or partial turn.</div>
+<div>11. COMMON FAILURE / ERROR</div><div>Ollama HTTP 500, PostgreSQL connection failure, malformed provider response.</div>
+<div>12. DEBUG / TEST</div><div><code>test_chat_failure_returns_service_unavailable_and_rolls_back_user_message</code> monkeypatches the agent.</div>
+<div>13. INTERVIEW ANSWER</div><div>“The API treats generation as part of a DB transaction and converts operational failures into a safe 503.”</div>
+</div></div>
+
+<h3>Async/await, coroutines, generators, comprehensions, imports, paths, and JSON</h3>
+<pre><code>@asynccontextmanager
+async def lifespan(_: FastAPI):
+    yield
+
+async def _generate(...):
+    async for message in query(prompt=prompt, options=options):
+        ...
+
+sources = [
+    {"chunk_id": str(result["id"]), ...}
+    for result in results
+]</code></pre>
+<p>Async appears in FastAPI lifespan and the Claude SDK executor. The main API endpoints and Ollama HTTP call are synchronous. <code>yield</code> appears in the DB dependency and async iteration over Claude messages. Comprehensions build source lists. <code>Path</code>, <code>os.getenv</code>, <code>json.dumps</code>/<code>loads</code>, and imports connect filesystem/configuration/network boundaries.</p>
+</section>
+
+<section id="packages" class="section">
+<h2>D. Actual Package Reference</h2>
+<p>Versions below come from <code>backend/requirements.txt</code>. “Actual import” means the package was found in current backend source; a package listed but not directly imported is marked reference/dependency-only.</p>
+<table><tr><th>Package / version</th><th>Actual import and files</th><th>Project role</th></tr>
+<tr><td>FastAPI 0.115.2</td><td><code>FastAPI</code>, <code>APIRouter</code>, dependencies, middleware in <code>main.py</code>/<code>routes.py</code></td><td>HTTP application and endpoints</td></tr>
+<tr><td>Uvicorn 0.32.0</td><td>Runtime command in Dockerfile; no Python import</td><td>ASGI server; runtime/configuration</td></tr>
+<tr><td>Pydantic 2.12.5</td><td><code>BaseModel</code>, <code>Field</code>, <code>Literal</code>, validators in <code>schemas.py</code></td><td>Request validation and response serialization</td></tr>
+<tr><td>SQLAlchemy 2.0.36</td><td>Engine/session ORM, <code>select</code>, <code>text</code>, mapped columns</td><td>Database connection, ORM, transactions, SQL</td></tr>
+<tr><td>psycopg 3.2.13</td><td>URL driver in <code>postgresql+psycopg</code>; no direct Python import</td><td>PostgreSQL driver</td></tr>
+<tr><td>Alembic 1.14.0</td><td><code>op</code>, <code>context</code>, <code>command</code> in migrations/tests</td><td>Schema versioning</td></tr>
+<tr><td>pgvector 0.3.6</td><td><code>Vector</code> ORM type and SQL operator query</td><td>384-D vector storage/search</td></tr>
+<tr><td>sentence-transformers 6.0.1</td><td><code>SentenceTransformer</code> in <code>embedder.py</code></td><td>Text to normalized embedding</td></tr>
+<tr><td>torch 2.8.0+cpu</td><td>Transitive/runtime backend for sentence-transformers; no direct project import</td><td>CPU model execution</td></tr>
+<tr><td>langchain-text-splitters 1.1.2</td><td><code>RecursiveCharacterTextSplitter</code> in <code>chunker.py</code></td><td>Overlap-aware transcript chunks</td></tr>
+<tr><td>PyYAML 6.0.3</td><td><code>yaml.safe_load</code> in <code>loader.py</code></td><td>Transcript front matter</td></tr>
+<tr><td>python-dotenv 1.0.1</td><td><code>load_dotenv</code> in <code>main.py</code>, <code>database.py</code>, <code>alembic/env.py</code></td><td>Local environment loading</td></tr>
+<tr><td>claude-agent-sdk 0.2.152</td><td>Lazy imports in <code>agent/executor.py</code></td><td>Optional Claude application-agent execution</td></tr>
+<tr><td>pytest 8.3.3</td><td>Tests and fixtures in <code>backend/tests</code></td><td>Automated verification</td></tr>
+<tr><td>httpx 0.27.2</td><td>TestClient dependency; no direct test import</td><td>HTTP testing support</td></tr>
+</table>
+<div class="note"><b>Reference-only distinction:</b> Hugging Face’s <code>InferenceClient</code> is directly used in <code>huggingface_provider.py</code>, but the default runtime is Ollama. Other large packages in the legacy <code>app/requirements.txt</code> are not part of the active backend Docker path unless imported by the preserved Streamlit application.</div>
+
+<h3>Package checkpoint example: FastAPI</h3>
+<div class="checkpoint"><h4>PACKAGE: FastAPI 0.115.2 · CATEGORY: web framework</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>A Python ASGI web framework.</div><div>2. WHAT DOES IT DO?</div><div>Maps HTTP requests to typed Python functions and serializes responses.</div><div>3. WHY DID I USE IT?</div><div>The project needs health, session, message, and chat APIs.</div><div>4. HOW DID I USE IT?</div><div><code>FastAPI()</code>, <code>APIRouter</code>, <code>Depends</code>, <code>HTTPException</code>, response models.</div><div>5. WHERE IS IT USED?</div><div><code>main.py</code>, <code>routes.py</code>, tests.</div><div>6. HOW DOES IT CONNECT?</div><div>It is the boundary between React and Python orchestration.</div><div>7. HOW DOES IT HELP RAG?</div><div>It exposes the chat request that starts retrieval and generation.</div><div>8. WHY THIS APPROACH?</div><div>Type hints and Pydantic integration reduce request-validation boilerplate.</div><div>9. WHY NOT ALTERNATIVES?</div><div>A lower-level WSGI/ASGI setup would require more manual validation and routing.</div><div>10. WHAT WOULD BREAK?</div><div>No API surface for the frontend.</div><div>11. COMMON FAILURE / ERROR</div><div>Dependency mismatch, bad response model, CORS or request validation errors.</div><div>12. HOW TO DEBUG OR TEST IT</div><div>Call <code>/health</code>, use TestClient, inspect status codes and JSON.</div><div>13. INTERVIEW ANSWER</div><div>“FastAPI gives the project typed, testable HTTP endpoints and dependency injection around the DB session.”</div>
+</div></div>
+</section>
+
+<section id="functions" class="section">
+<h2>E. Function-by-Function Reference</h2>
+<table><tr><th>Function</th><th>Inputs → output</th><th>Called by / next</th><th>RAG role</th></tr>
+<tr><td><code>health</code><br><code>main.py</code></td><td>HTTP request → <code>HealthResponse</code></td><td>HTTP client → DB probe</td><td>Operational readiness</td></tr>
+<tr><td><code>get_db</code><br><code>database.py</code></td><td>none → generator of Session</td><td>FastAPI Depends → route</td><td>DB access for retrieval/persistence</td></tr>
+<tr><td><code>chat</code><br><code>routes.py</code></td><td>ChatRequest, DB → ChatResponse</td><td>frontend → GrowthAgent → commit</td><td>Complete request boundary</td></tr>
+<tr><td><code>load_transcript</code><br><code>loader.py</code></td><td>Path → Transcript dataclass</td><td>ingest_episode</td><td>Document metadata/text input</td></tr>
+<tr><td><code>clean_transcript</code><br><code>cleaner.py</code></td><td>str → str</td><td>ingest_episode → chunker</td><td>Removes timestamps/blank lines</td></tr>
+<tr><td><code>chunk_transcript</code><br><code>chunker.py</code></td><td>text, size, overlap → list[str]</td><td>ingest_episode → embedder</td><td>Creates embedding units</td></tr>
+<tr><td><code>embed_text/embed_texts</code><br><code>embedder.py</code></td><td>text(s) → float list(s)</td><td>ingestion/retriever</td><td>Vector representation</td></tr>
+<tr><td><code>save_transcript</code><br><code>repository.py</code></td><td>DB, Transcript, chunks, embeddings → Document</td><td>ingest_episode → commit</td><td>Stores searchable knowledge</td></tr>
+<tr><td><code>search</code><br><code>retriever.py</code></td><td>DB, query, top_k, threshold → row dicts</td><td>RAGService.retrieve</td><td>Vector similarity retrieval</td></tr>
+<tr><td><code>retrieve/answer</code><br><code>rag_service.py</code></td><td>DB, question → sources/context/answer</td><td>skills → provider</td><td>Grounding and context construction</td></tr>
+<tr><td><code>get_llm_provider</code><br><code>factory.py</code></td><td>environment → LLMProvider</td><td>agent/RAG service</td><td>Model selection</td></tr>
+<tr><td><code>generate</code><br><code>ollama_provider.py</code></td><td>prompt/system → str</td><td>RAG/Ship30/Artifact</td><td>Answer generation</td></tr>
+<tr><td><code>route</code><br><code>router.py</code></td><td>message → AgentRoute</td><td>GrowthAgent</td><td>Skill selection</td></tr>
+<tr><td><code>execute</code><br><code>agent.py</code></td><td>DB, message → result dict</td><td>chat route</td><td>Orchestration</td></tr>
+<tr><td><code>normalize_html_artifact/_sanitize</code><br><code>artifact_skill.py</code></td><td>HTML str → safe-ish HTML str</td><td>ArtifactSkill.execute</td><td>Artifact response safety</td></tr>
+</table>
+<h3>Function checkpoint: <code>TranscriptRetriever.search</code></h3>
+<div class="checkpoint"><h4>Actual location: <code>backend/app/ingestion/retriever.py</code></h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>A method that embeds a query and runs a vector similarity SQL query.</div><div>2. WHAT DOES IT DO?</div><div>Orders chunks by pgvector distance and filters by <code>min_similarity</code>.</div><div>3. WHY DID WE CREATE IT?</div><div>To isolate database retrieval from prompt/generation logic.</div><div>4. HOW DOES IT WORK?</div><div>Embed query; bind vector, threshold, and limit; execute SQL; map rows to dictionaries.</div><div>5. WHERE IS IT CALLED?</div><div><code>RAGService.retrieve</code>.</div><div>6. WHAT DOES IT CALL NEXT?</div><div>SQLAlchemy <code>db.execute</code>, then RAG source mapping.</div><div>7. HOW DOES IT CONNECT TO RAG?</div><div>It supplies the evidence that prevents unsupported answers.</div><div>8. WHY THIS DESIGN?</div><div>It keeps vector SQL in one owning abstraction.</div><div>9. ALTERNATIVE?</div><div>Use an ORM vector expression or external vector database; current Postgres is already the persistence layer.</div><div>10. WHAT BREAKS?</div><div>Questions have no transcript context.</div><div>11. COMMON FAILURE</div><div>Dimension mismatch, invalid vector cast, connection failure, or threshold too high.</div><div>12. TEST/DEBUG</div><div><code>tests/test_retrieval.py</code> uses controlled rows and asserts threshold/metadata.</div><div>13. INTERVIEW ANSWER</div><div>“The retriever embeds the query and lets pgvector rank and threshold stored chunks before RAG builds the prompt.”</div>
+</div></div>
+</section>
+
+<section id="classes" class="section">
+<h2>F. Class-by-Class Reference</h2>
+<table><tr><th>Class</th><th>File / base</th><th>Responsibility / important methods</th></tr>
+<tr><td><code>HealthResponse</code></td><td><code>main.py</code> / Pydantic BaseModel</td><td>Health serialization: status, service, database.</td></tr>
+<tr><td><code>SessionCreate, MessageCreate, ChatRequest</code></td><td><code>schemas.py</code> / BaseModel</td><td>Validate request bodies with Field and field_validator.</td></tr>
+<tr><td><code>ChatResponse, ChatSource, ArtifactResponse</code></td><td><code>schemas.py</code> / BaseModel</td><td>Define API output shape.</td></tr>
+<tr><td><code>User, Session, Message, Document, Chunk</code></td><td><code>db/models.py</code> / SQLAlchemy Base</td><td>ORM tables, relationships, constraints, vector column.</td></tr>
+<tr><td><code>Transcript</code></td><td><code>loader.py</code> / dataclass</td><td>Typed metadata/text document object.</td></tr>
+<tr><td><code>TranscriptEmbedder</code></td><td><code>embedder.py</code></td><td>Owns SentenceTransformer and encoding methods.</td></tr>
+<tr><td><code>TranscriptRetriever</code></td><td><code>retriever.py</code></td><td>Owns query embedding and pgvector search.</td></tr>
+<tr><td><code>RAGService</code></td><td><code>rag_service.py</code></td><td>Retrieval-to-context-to-answer orchestration.</td></tr>
+<tr><td><code>LLMProvider</code></td><td><code>provider.py</code> / ABC</td><td>Abstract <code>generate</code> contract.</td></tr>
+<tr><td><code>OllamaProvider</code></td><td><code>ollama_provider.py</code> / LLMProvider</td><td>HTTP JSON chat to Ollama.</td></tr>
+<tr><td><code>ClaudeAgentExecutor</code></td><td><code>agent/executor.py</code> / LLMProvider</td><td>Optional SDK query path.</td></tr>
+<tr><td><code>GrowthAgent</code></td><td><code>agent.py</code></td><td>Chooses route, creates executor/skill, returns result.</td></tr>
+<tr><td><code>AgentRouter / AgentRoute</code></td><td><code>router.py</code> / dataclass route</td><td>Deterministic intent classification.</td></tr>
+<tr><td><code>RAGSkill, Ship30Skill, ArtifactSkill</code></td><td><code>agent/skills</code></td><td>Explicit skill boundaries; all reuse retrieval as appropriate.</td></tr>
+<tr><td><code>RecordingSkill, FakeRAGService, FakeLLM, FakeDatabase</code></td><td><code>backend/tests</code></td><td>Test doubles; not production classes.</td></tr>
+</table>
+<div class="checkpoint"><h4>CLASS CHECKPOINT: <code>GrowthAgent</code></h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>The application orchestration object for a chat request.</div><div>2. WHAT DOES IT DO?</div><div>Routes input, creates the selected execution path and skill, invokes it, adds metadata.</div><div>3. WHY DID WE USE IT?</div><div>To keep API routes thin and make skills explicit.</div><div>4. HOW DID WE USE IT?</div><div>Constructor accepts an optional router and skill dictionary for dependency injection; <code>execute</code> handles dispatch.</div><div>5. WHERE IS IT USED?</div><div>Global <code>growth_agent</code> in <code>api/routes.py</code>.</div><div>6. HOW DOES IT CONNECT?</div><div>It is between HTTP and skills/providers.</div><div>7. HOW DOES IT HELP RAG?</div><div>It selects RAGSkill without placing routing logic inside RAGService.</div><div>8. WHY THIS APPROACH?</div><div>Deterministic orchestration is explainable and testable.</div><div>9. WHY NOT A FULL AUTONOMOUS AGENT?</div><div>The assignment needs predictable skill routing; a full planner would add latency and nondeterminism.</div><div>10. WHAT BREAKS?</div><div>Chat cannot choose or execute a skill.</div><div>11. COMMON FAILURE</div><div>Incorrect provider selection or skill result shape.</div><div>12. DEBUG/TEST</div><div>Inject <code>RecordingSkill</code>; inspect route and calls in <code>test_agent.py</code>.</div><div>13. INTERVIEW ANSWER</div><div>“GrowthAgent is a small deterministic application agent: it routes to explicit skills and injects either local or Claude execution.”</div>
+</div></div>
+</section>
+
+<section id="fastapi" class="section">
+<h2>G. FastAPI Python Code</h2>
+<table><tr><th>Method/path</th><th>Function and input</th><th>Output/action</th></tr>
+<tr><td>GET <code>/</code></td><td><code>root()</code></td><td>Service status dictionary.</td></tr>
+<tr><td>GET <code>/health</code></td><td><code>health()</code></td><td>DB SELECT 1; HealthResponse.</td></tr>
+<tr><td>POST <code>/api/sessions</code></td><td><code>create_session(SessionCreate, db=Depends(get_db))</code></td><td>Create/find User, create Session, 201.</td></tr>
+<tr><td>GET <code>/api/sessions/{session_id}</code></td><td><code>get_session</code></td><td>Session or 404.</td></tr>
+<tr><td>GET <code>/api/sessions/{id}/messages</code></td><td><code>get_messages</code></td><td>Ordered Message list.</td></tr>
+<tr><td>POST <code>/api/sessions/{id}/messages</code></td><td><code>create_message(MessageCreate)</code></td><td>Persist one message, 201.</td></tr>
+<tr><td>POST <code>/api/chat</code></td><td><code>chat(ChatRequest)</code></td><td>Transactionally persist user/assistant turn and return answer, sources, skill, route reason, artifact.</td></tr>
+</table>
+<pre><code>POST /api/chat
+  -> Pydantic ChatRequest
+  -> db.get(Session, session_id)
+  -> db.add(user_message); db.flush()
+  -> growth_agent.execute(db, message)
+      -> router -> skill -> retrieval -> LLM
+  -> db.add(assistant_message); db.commit()
+  -> ChatResponse model serialization</code></pre>
+<div class="checkpoint"><h4>CONCEPT: FastAPI dependency injection and Pydantic validation</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>FastAPI injects declared dependencies; Pydantic validates typed data models.</div><div>2. WHAT DOES IT DO?</div><div><code>Depends(get_db)</code> supplies a DB session; request fields enforce length, role, and nonblank values.</div><div>3. WHY DID I USE IT?</div><div>It keeps endpoint code focused on workflow rather than parsing JSON manually.</div><div>4. HOW DID I USE IT?</div><div>Annotations, <code>Field</code>, <code>field_validator</code>, response models, status codes.</div><div>5. WHERE?</div><div><code>main.py</code>, <code>routes.py</code>, <code>schemas.py</code>.</div><div>6. CONNECTION?</div><div>Validated HTTP data becomes typed Python arguments for DB and agent code.</div><div>7. RAG HELP?</div><div>It protects the RAG pipeline from blank/oversized questions and invalid session IDs.</div><div>8. WHY?</div><div>Explicit contracts make frontend/backend integration predictable.</div><div>9. WHY NOT MANUAL JSON?</div><div>Manual parsing duplicates validation and produces inconsistent errors.</div><div>10. BREAKAGE?</div><div>Bad input reaches SQL/provider code or response serialization fails.</div><div>11. COMMON ERROR?</div><div>422 validation errors, missing dependency, response model mismatch.</div><div>12. DEBUG?</div><div>Use TestClient and assert status/JSON in persistence tests.</div><div>13. INTERVIEW?</div><div>“FastAPI turns Python type annotations into validated, documented API boundaries and injects the DB session per request.”</div>
+</div></div>
+</section>
+
+<section id="database" class="section">
+<h2>H. Database Python Code</h2>
+<pre><code>engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+def get_db() -> Generator:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()</code></pre>
+<p>SQLAlchemy creates the engine, session factory, declarative base, ORM classes, relationships, and transaction methods. Psycopg is the driver selected by <code>postgresql+psycopg</code>. pgvector’s <code>Vector(dim=384)</code> maps embedding lists to a PostgreSQL vector column. The retriever uses SQLAlchemy <code>text()</code> because the pgvector distance operator is expressed directly in SQL.</p>
+<div class="flow">Python list[float] → SQLAlchemy bind parameter → CAST(... AS vector) → PostgreSQL pgvector cosine distance → similarity float → source dict → prompt</div>
+<div class="checkpoint"><h4>CONCEPT: ORM model, transaction, relationship, pgvector</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>An ORM maps Python classes/attributes to database tables/columns; a transaction groups changes; pgvector stores/searches vectors.</div><div>2. WHAT DOES IT DO?</div><div>Stores users, sessions, messages, documents, chunks and embeddings.</div><div>3. WHY?</div><div>RAG needs durable document evidence and chat needs durable conversation state.</div><div>4. HOW?</div><div><code>Mapped</code>, <code>mapped_column</code>, relationships, <code>db.add</code>, <code>flush</code>, <code>commit</code>, <code>rollback</code>.</div><div>5. WHERE?</div><div><code>database.py</code>, <code>models.py</code>, <code>repository.py</code>, routes, retriever.</div><div>6. CONNECTION?</div><div>DB rows are the bridge between ingestion and RAG answer generation.</div><div>7. RAG?</div><div>Embeddings and source metadata survive process restarts.</div><div>8. WHY?</div><div>PostgreSQL already provides relational persistence and pgvector extension support.</div><div>9. ALTERNATIVES?</div><div>External vector stores or raw SQL everywhere would split persistence or increase boilerplate.</div><div>10. BREAKAGE?</div><div>No persisted source corpus, sessions, or similarity search.</div><div>11. COMMON FAILURE?</div><div>Connection errors, migration mismatch, vector dimension mismatch, uncommitted transaction.</div><div>12. DEBUG?</div><div>Health endpoint, Alembic current/upgrade, SQLAlchemy test DB, database counts.</div><div>13. INTERVIEW?</div><div>“PostgreSQL is both the system of record and vector index; SQLAlchemy owns transactions while pgvector ranks chunks.”</div>
+</div></div>
+</section>
+
+<section id="rag" class="section">
+<h2>I. RAG Python Code</h2>
+<table><tr><th>Stage</th><th>Input → function/package → output</th></tr>
+<tr><td>Discovery</td><td>Mounted root → <code>run_ingestion.main</code> glob <code>*/transcript.md</code> → Paths.</td></tr>
+<tr><td>Load metadata</td><td>Path → <code>load_transcript</code> + PyYAML → Transcript dataclass.</td></tr>
+<tr><td>Clean</td><td>Transcript text → <code>clean_transcript</code> + regex → normalized text.</td></tr>
+<tr><td>Chunk</td><td>Text → RecursiveCharacterTextSplitter → overlapping chunks.</td></tr>
+<tr><td>Embed</td><td>Chunks → SentenceTransformer → normalized 384-D lists.</td></tr>
+<tr><td>Store</td><td>Transcript/chunks/vectors → <code>save_transcript</code> → Document/Chunk rows.</td></tr>
+<tr><td>Query</td><td>Question → <code>embed_text</code> → query vector.</td></tr>
+<tr><td>Retrieve</td><td>Vector → pgvector SQL → rows above 0.45.</td></tr>
+<tr><td>Ground</td><td>Rows → source dictionaries/context string → prompt.</td></tr>
+<tr><td>Generate</td><td>Prompt → LLM provider → answer.</td></tr>
+<tr><td>Insufficient evidence</td><td>No sources → fixed no-support message; no LLM call.</td></tr>
+</table>
+<pre><code>1 - (c.embedding &lt;=&gt; CAST(:query_embedding AS vector)) AS similarity
+WHERE c.embedding IS NOT NULL
+  AND 1 - (c.embedding &lt;=&gt; CAST(:query_embedding AS vector)) &gt;= :min_similarity</code></pre>
+<div class="checkpoint"><h4>CONCEPT: grounding and similarity threshold</h4><div class="cpgrid">
+<div>1. WHAT IS IT?</div><div>RAG retrieves evidence before generation; similarity estimates vector closeness.</div><div>2. WHAT DOES IT DO?</div><div>Only chunks at or above 0.45 become sources/context.</div><div>3. WHY?</div><div>To reduce unsupported claims and provide inspectable evidence.</div><div>4. HOW?</div><div>Retriever returns rows; RAGService maps metadata and joins context.</div><div>5. WHERE?</div><div><code>retriever.py</code> and <code>rag_service.py</code>.</div><div>6. CONNECTION?</div><div>It connects database vectors to provider prompts.</div><div>7. RAG?</div><div>This is the central retrieve-then-generate pattern.</div><div>8. WHY?</div><div>Semantic search handles paraphrases better than exact keyword matching.</div><div>9. ALTERNATIVE?</div><div>Keyword search, external vector DB, or hybrid search could be added later.</div><div>10. BREAKAGE?</div><div>Irrelevant context, hallucination risk, or empty answers.</div><div>11. COMMON FAILURE?</div><div>Wrong model dimension, threshold too high/low, poor chunking, empty corpus.</div><div>12. DEBUG?</div><div>Controlled threshold tests, inspect source similarities and database counts, test unrelated queries.</div><div>13. INTERVIEW?</div><div>“I embed both corpus chunks and the query into the same 384-D space, then use pgvector distance plus a threshold before prompting the LLM.”</div>
+</div></div>
+</section>
+
+<section id="agent" class="section">
+<h2>J. Agentic AI Python Code</h2>
+<pre><code>route = self.router.route(message)
+if route.skill == "rag":
+    result = skill.execute(db=db, question=message)
+elif route.skill == "ship30":
+    result = skill.execute(db=db, topic=message)
+else:
+    result = skill.execute(db=db, request=message)</code></pre>
+<p>The project’s agent is intentionally deterministic. The router checks artifact terms first, Ship30 terms second, and defaults to RAG. The skill performs LLM work; routing itself does not ask a model to decide. In Claude mode the application agent creates <code>ClaudeAgentExecutor</code>, which invokes the SDK. In Ollama mode it creates the configured local provider.</p>
+<table><tr><th>Skill</th><th>Input and behavior</th><th>Evidence</th></tr>
+<tr><td>RAGSkill</td><td>Question → <code>RAGService.answer</code></td><td><code>agent/skills/rag_skill.py</code></td></tr>
+<tr><td>Ship30Skill</td><td>Topic → retrieval context → approximately 1,250-word grounded essay</td><td><code>ship30_skill.py</code></td></tr>
+<tr><td>ArtifactSkill</td><td>Request → retrieval context → HTML normalization/sanitization → artifact object</td><td><code>artifact_skill.py</code></td></tr>
+</table>
+<div class="checkpoint"><h4>CONCEPT: deterministic agent routing and skill boundaries</h4><div class="cpgrid"><div>1. WHAT IS IT?</div><div>An application-level orchestrator that selects a specialized operation.</div><div>2. WHAT DOES IT DO?</div><div>Chooses and invokes one explicit skill, then adds route metadata.</div><div>3. WHY?</div><div>Separate answer types have different prompts and output contracts.</div><div>4. HOW?</div><div>Dataclass route + skill dictionary injection + lazy construction.</div><div>5. WHERE?</div><div><code>agent.py</code>, <code>router.py</code>, <code>agent/skills</code>.</div><div>6. CONNECTION?</div><div>API calls agent; agent calls skills; skills call RAG/provider.</div><div>7. RAG?</div><div>RAG is one skill and a shared evidence service for generation skills.</div><div>8. WHY?</div><div>Predictability, transparent reasons, cheap tests.</div><div>9. ALTERNATIVE?</div><div>LLM planner or fully autonomous tool loop; not chosen for this small take-home.</div><div>10. BREAKAGE?</div><div>All requests would need one monolithic prompt handler.</div><div>11. COMMON FAILURE?</div><div>Ambiguous substring routing or skill result mismatch.</div><div>12. DEBUG?</div><div>Route unit tests, injected RecordingSkill, live API skill field.</div><div>13. INTERVIEW?</div><div>“Agentic behavior here means explicit orchestration of specialized skills; the local path is deterministic, while the selected executor supplies generation.”</div></div></div>
+</section>
+
+<section id="providers" class="section">
+<h2>K. LLM Provider Python Code</h2>
+<pre><code>class LLMProvider(ABC):
+    @abstractmethod
+    def generate(self, prompt: str,
+                 system_prompt: str | None = None) -> str:
+        raise NotImplementedError
+
+provider = os.getenv("LLM_PROVIDER", "ollama").lower()
+if provider == "ollama":
+    return OllamaProvider()
+if provider in {"claude", "claude-agent-sdk"}:
+    return ClaudeAgentProvider()</code></pre>
+<p><code>OllamaProvider.generate</code> builds JSON and calls <code>/api/chat</code> with <code>urllib.request.urlopen</code>. <code>ClaudeAgentExecutor</code> lazily imports the SDK, creates <code>ClaudeAgentOptions</code>, asynchronously iterates <code>query()</code>, and joins assistant text blocks. <code>HuggingFaceProvider</code> uses <code>InferenceClient</code> when explicitly selected and requires <code>HF_TOKEN</code>.</p>
+<div class="checkpoint"><h4>CONCEPT: abstraction, polymorphism, environment-selected dependency injection</h4><div class="cpgrid"><div>1. WHAT IS IT?</div><div>A common interface with interchangeable implementations.</div><div>2. WHAT DOES IT DO?</div><div>Lets skills call <code>generate</code> without knowing transport/model details.</div><div>3. WHY?</div><div>Ollama is mandatory local/demo behavior; cloud paths are optional.</div><div>4. HOW?</div><div>Factory selects provider; GrowthAgent selects Claude executor explicitly in Claude mode.</div><div>5. WHERE?</div><div><code>llm/provider.py</code>, factory, provider classes, agent executor.</div><div>6. CONNECTION?</div><div>RAG/Ship30/Artifact prompts end at the interface.</div><div>7. RAG?</div><div>Generation is the final stage after retrieved evidence.</div><div>8. WHY?</div><div>Switching models should not rewrite skills.</div><div>9. ALTERNATIVE?</div><div>Direct provider calls in every skill would duplicate integration code.</div><div>10. BREAKAGE?</div><div>Provider errors or wrong output shape stop answer generation.</div><div>11. COMMON FAILURE?</div><div>Ollama unavailable, HTTP 500, missing HF token, Claude authentication failure.</div><div>12. DEBUG?</div><div>Print only safe provider name/base URL/model; mock interface in tests; inspect 503 logs.</div><div>13. INTERVIEW?</div><div>“The provider contract is a stable seam between domain skills and model transports, with Ollama as the safe default.”</div></div></div>
+</section>
+
+<section id="testing" class="section">
+<h2>L. Testing Python</h2>
+<table><tr><th>Test file</th><th>Category</th><th>What it protects</th></tr>
+<tr><td><code>test_health.py</code></td><td>API smoke</td><td>App imports and health response shape.</td></tr>
+<tr><td><code>test_persistence.py</code></td><td>PostgreSQL integration/API</td><td>Migrations, sessions, messages, isolation, validation, rollback, chat shape.</td></tr>
+<tr><td><code>test_agent.py</code></td><td>Unit/mocked</td><td>Routing, skill reuse, sanitizer, HTML normalization, Claude SDK structure.</td></tr>
+<tr><td><code>test_retrieval.py</code></td><td>Controlled retrieval contract</td><td>Threshold, SQL operator, source metadata, no-support path.</td></tr>
+</table>
+<pre><code>@pytest.fixture(scope="module", autouse=True)
+def ensure_test_database():
+    command.upgrade(alembic_cfg, "head")
+    yield
+
+monkeypatch.setattr("app.api.routes.growth_agent.execute", fail_answer)
+assert response.status_code == 503</code></pre>
+<div class="checkpoint"><h4>CONCEPT: pytest fixtures, monkeypatch, TestClient, fakes</h4><div class="cpgrid"><div>1. WHAT IS IT?</div><div>Pytest discovers functions; fixtures prepare resources; monkeypatch replaces behavior; TestClient sends HTTP calls in-process.</div><div>2. WHAT DOES IT DO?</div><div>Tests isolate expensive providers and exercise persistence against a test DB.</div><div>3. WHY?</div><div>Fast repeatable feedback without requiring Ollama for every test.</div><div>4. HOW?</div><div>FakeEmbedder, FakeDatabase, FakeLLM, RecordingSkill, fixture migration, assertions.</div><div>5. WHERE?</div><div><code>backend/tests</code>.</div><div>6. CONNECTION?</div><div>Tests verify individual edges and the API transaction path.</div><div>7. RAG?</div><div>Retrieval threshold and source mapping are tested without downloading the model.</div><div>8. WHY?</div><div>Mocks make failure and route tests deterministic.</div><div>9. ALTERNATIVE?</div><div>Only live tests would be slow/flaky; only mocks would miss database behavior.</div><div>10. BREAKAGE?</div><div>Regressions in validation, persistence, routing, or security go unnoticed.</div><div>11. COMMON FAILURE?</div><div>Wrong test DB URL, stale Docker image, no PostgreSQL, model loading during collection.</div><div>12. DEBUG?</div><div>Run focused module first, rebuild image, then full <code>pytest -q</code>.</div><div>13. INTERVIEW?</div><div>“I combine real persistence tests with cheap fakes around embeddings/providers so the important contracts are covered without making the suite depend on Ollama.”</div></div></div>
+</section>
+
+<section id="debugging" class="section">
+<h2>M. Error and Debugging Handbook</h2>
+<table><tr><th>Symptom</th><th>Likely cause</th><th>Where/command</th><th>Why the check helps</th></tr>
+<tr><td>Backend cannot import</td><td>Wrong Python/dependencies or stale image</td><td><code>docker compose up -d --build backend</code>; <code>python --version</code></td><td>Rebuilds the authoritative environment.</td></tr>
+<tr><td>PostgreSQL connection failure</td><td>Service not healthy or wrong DATABASE_URL</td><td><code>docker compose ps</code>; <code>/health</code>; logs</td><td>Checks dependency and DB connectivity.</td></tr>
+<tr><td>Vector dimension error</td><td>Model 384 but schema 1536 or vice versa</td><td><code>alembic current</code>; models/migrations</td><td>All stored/query vectors must share 384 dimensions.</td></tr>
+<tr><td>No transcript files</td><td>Wrong mount root/glob</td><td>Inspect <code>/app/lenny_transcripts</code>; runner uses <code>*/transcript.md</code></td><td>Host episodes directory is mounted directly.</td></tr>
+<tr><td>No RAG sources</td><td>Empty corpus or threshold too high</td><td>Database counts; <code>test_retrieval.py</code>; similarities</td><td>Separates storage from ranking behavior.</td></tr>
+<tr><td>Ollama HTTP error/timeout</td><td>Ollama/model unavailable or local load</td><td><code>ollama list</code>; provider env; backend logs</td><td>Container reaches host through host.docker.internal.</td></tr>
+<tr><td>Claude auth error</td><td>External Claude authentication absent</td><td><code>LLM_PROVIDER</code>, Claude environment</td><td>Claude is optional; Ollama remains fallback/default.</td></tr>
+<tr><td>Raw fenced artifact</td><td>Model wrapped HTML in Markdown</td><td>ArtifactSkill normalization tests</td><td>Fences are stripped before sanitization/viewer.</td></tr>
+<tr><td>Frontend cannot call API</td><td>VITE_API_BASE_URL/CORS/ports</td><td>Browser console, CORS settings, Compose</td><td>Confirms the browser origin is allowed.</td></tr>
+<tr><td>Test file not found in container</td><td>Image not rebuilt after source/test edit</td><td><code>docker compose up -d --build backend</code></td><td>Container copies tests at image build time.</td></tr>
+</table>
+</section>
+
+<section id="execution" class="section">
+<h2>N. Complete Python Execution Map</h2>
+<div class="flow">USER<br>↓<br>React fetch<br>↓<br><code>routes.chat</code><br>↓<br>Pydantic <code>ChatRequest</code><br>↓<br>SQLAlchemy session lookup<br>↓<br><code>GrowthAgent.execute</code><br>↓<br><code>AgentRouter.route</code><br>↓<br>RAG / Ship30 / Artifact skill<br>↓<br><code>RAGService.retrieve</code><br>↓<br><code>TranscriptRetriever.search</code><br>↓<br><code>TranscriptEmbedder.embed_text</code><br>↓<br>SQLAlchemy text + PostgreSQL/pgvector<br>↓<br>source rows/context<br>↓<br>Ollama or Claude <code>generate</code><br>↓<br>assistant Message commit<br>↓<br><code>ChatResponse</code><br>↓<br>React source/skill/artifact UI</div>
+<table><tr><th>Arrow</th><th>Responsible Python code</th></tr><tr><td>React → HTTP</td><td><code>frontend/src/App.tsx</code> fetch calls.</td></tr><tr><td>HTTP → typed input</td><td>FastAPI route signature + Pydantic schemas.</td></tr><tr><td>Route → agent</td><td><code>routes.chat</code> calls <code>growth_agent.execute</code>.</td></tr><tr><td>Agent → skill</td><td><code>GrowthAgent.execute</code> dispatch.</td></tr><tr><td>Skill → evidence</td><td>RAGSkill/Ship30Skill/ArtifactSkill call RAGService.</td></tr><tr><td>Evidence → DB</td><td>Retriever embeds and executes pgvector SQL.</td></tr><tr><td>Evidence → model</td><td>RAGService builds context and calls provider.</td></tr><tr><td>Result → persistence</td><td>Route adds assistant Message and commits transaction.</td></tr><tr><td>Result → UI</td><td>ChatResponse schema serializes sources/metadata/artifact.</td></tr></table>
+</section>
+
+<section id="packagemap" class="section">
+<h2>O. Package → Function → Project Role Map</h2>
+<table><tr><th>Package/import</th><th>Actual object/file</th><th>Role</th><th>RAG connection</th></tr>
+<tr><td>fastapi</td><td>FastAPI, APIRouter, Depends, HTTPException</td><td>API and dependency injection</td><td>Starts request flow.</td></tr>
+<tr><td>pydantic</td><td>BaseModel, Field, field_validator</td><td>Typed request/response contracts</td><td>Validates questions and sources.</td></tr>
+<tr><td>sqlalchemy</td><td>create_engine, Session, select, text, mapped_column</td><td>ORM/SQL/transactions</td><td>Stores and retrieves chunks.</td></tr>
+<tr><td>pgvector</td><td>Vector</td><td>Embedding column type</td><td>Enables similarity search.</td></tr>
+<tr><td>sentence_transformers</td><td>SentenceTransformer</td><td>Embedding model</td><td>Maps text to vectors.</td></tr>
+<tr><td>langchain_text_splitters</td><td>RecursiveCharacterTextSplitter</td><td>Chunking</td><td>Defines retrieval units.</td></tr>
+<tr><td>yaml</td><td>safe_load</td><td>Transcript metadata</td><td>Preserves source metadata.</td></tr>
+<tr><td>claude_agent_sdk</td><td>query, AssistantMessage, ClaudeAgentOptions</td><td>Optional Claude execution</td><td>Alternative final generation path.</td></tr>
+<tr><td>huggingface_hub</td><td>InferenceClient</td><td>Optional provider</td><td>Alternative generation only.</td></tr>
+<tr><td>dotenv</td><td>load_dotenv</td><td>Local config loading</td><td>Chooses DB/provider/model.</td></tr>
+<tr><td>pytest</td><td>fixture, monkeypatch, assertions</td><td>Verification</td><td>Protects RAG contracts.</td></tr>
+<tr><td>urllib.request/json</td><td>Request, urlopen, dumps/loads</td><td>Ollama HTTP transport</td><td>Generates grounded answer.</td></tr>
+</table>
+</section>
+
+<section id="functionmap" class="section">
+<h2>P. Function Sequence Map</h2>
+<table><tr><th>Step</th><th>Function/class</th><th>Receives</th><th>Returns</th><th>Next</th></tr>
+<tr><td>1</td><td><code>main.app</code></td><td>Environment</td><td>FastAPI app</td><td>Routes</td></tr><tr><td>2</td><td><code>chat</code></td><td>ChatRequest + DB</td><td>ChatResponse</td><td>GrowthAgent</td></tr><tr><td>3</td><td><code>route</code></td><td>message</td><td>AgentRoute</td><td>Skill</td></tr><tr><td>4</td><td><code>execute</code></td><td>DB + message</td><td>skill result</td><td>RAG/LLM</td></tr><tr><td>5</td><td><code>retrieve</code></td><td>question + DB</td><td>sources/context</td><td>Provider</td></tr><tr><td>6</td><td><code>search</code></td><td>query + DB</td><td>rows</td><td>source mapping</td></tr><tr><td>7</td><td><code>embed_text</code></td><td>query string</td><td>float vector</td><td>pgvector SQL</td></tr><tr><td>8</td><td><code>generate</code></td><td>prompt/system</td><td>answer string</td><td>route persistence</td></tr><tr><td>9</td><td><code>commit</code></td><td>messages</td><td>database state</td><td>JSON response</td></tr>
+</table>
+</section>
+
+<section id="beginner" class="section">
+<h2>Q. Read the Code Like a Beginner</h2>
+<ol><li><b>requirements.txt:</b> identify runtime versus test/RAG packages; study imports and version pins.</li><li><b>main.py:</b> see app creation, middleware, lifespan, health; study decorators and context managers.</li><li><b>routes.py:</b> trace HTTP inputs and transaction boundaries; study dependency injection and exceptions.</li><li><b>schemas.py:</b> study Pydantic fields, literals, validators, optional types.</li><li><b>database.py/models.py:</b> study engine/session/ORM relationships and constraints.</li><li><b>migrations:</b> compare Python schema history with current models and vector dimension.</li><li><b>ingestion:</b> follow Path → Transcript → clean → chunks → embeddings → commit.</li><li><b>retriever.py/rag_service.py:</b> follow vector SQL → sources → context → prompt.</li><li><b>llm:</b> study ABC inheritance, factory selection, JSON HTTP, async SDK iteration.</li><li><b>agent/skills:</b> study dataclass routing, dependency injection, explicit skill contracts.</li><li><b>tests:</b> see real DB tests and controlled fakes; understand what is and is not integration-tested.</li></ol>
+<div class="note">Before moving on, be able to answer: What enters this file? What leaves it? What side effect does it own? What evidence or state does it pass to the next layer?</div>
+</section>
+
+<section id="memorize" class="section">
+<h2>R. Memorize versus Understand</h2>
+<div class="two"><div class="card"><h4>MUST MEMORIZE</h4><ul><li>Python functions, classes, lists/dicts, exceptions.</li><li>Type hints and optional values.</li><li>FastAPI route and Pydantic patterns.</li><li>SQLAlchemy session/commit/rollback basics.</li><li><code>async</code>/<code>await</code> basics.</li><li>Environment variable and Docker commands.</li><li>Pytest assertions and fixtures.</li></ul></div><div class="card"><h4>MUST UNDERSTAND</h4><ul><li>Chunk → embedding → vector retrieval.</li><li>Similarity threshold and evidence grounding.</li><li>Provider abstraction and model selection.</li><li>Agent routing and explicit skills.</li><li>Transaction boundary around generation.</li><li>Container networking to host Ollama.</li><li>Why tests use fakes for expensive dependencies.</li></ul></div></div>
+</section>
+
+<section id="interview" class="section">
+<h2>S. Interview Preparation</h2>
+<table><tr><th>Question</th><th>Short answer</th><th>Evidence</th></tr>
+<tr><td>Why FastAPI?</td><td>Typed, testable endpoints with dependency injection and Pydantic integration.</td><td><code>main.py</code>, <code>routes.py</code>, <code>schemas.py</code></td></tr>
+<tr><td>Why PostgreSQL + pgvector?</td><td>One durable system stores chat, documents, metadata, and vector search.</td><td><code>models.py</code>, <code>retriever.py</code></td></tr>
+<tr><td>How does RAG prevent hallucination?</td><td>Retrieve thresholded transcript evidence, prompt only that context, and return sources.</td><td><code>rag_service.py</code></td></tr>
+<tr><td>Why all-MiniLM?</td><td>Small CPU-friendly embedding model with 384-D vectors suitable for local Docker.</td><td><code>embedder.py</code>, migration</td></tr>
+<tr><td>How does routing work?</td><td>Deterministic ordered term matching: artifact, Ship30, then RAG default.</td><td><code>router.py</code></td></tr>
+<tr><td>How are skills separated?</td><td>Each skill owns its output prompt/shape while reusing RAGService.</td><td><code>agent/skills</code></td></tr>
+<tr><td>Why provider abstraction?</td><td>Skills depend on one generate contract; Ollama/Claude transport can vary.</td><td><code>provider.py</code>, factory</td></tr>
+<tr><td>How does Ollama connect?</td><td>Backend sends JSON to host.docker.internal:11434 through urllib.</td><td><code>ollama_provider.py</code>, Compose</td></tr>
+<tr><td>How is HTML protected?</td><td>Fence normalization, server-side defense-in-depth, and sandboxed iframe.</td><td><code>artifact_skill.py</code>, App.tsx</td></tr>
+<tr><td>How would you scale?</td><td>Cache the embedding model, use a worker/job for ingestion, add auth, indexes, observability, and provider timeouts/retries.</td><td>Current limits documented in README.</td></tr>
+</table>
+</section>
+
+<section id="master" class="section">
+<h2>Final Master Checkpoint</h2>
+<p>Use these prompts for every technology while reading the code.</p>
+<table><tr><th>Technology</th><th>WHAT IS IT? / WHAT DOES IT DO?</th><th>WHY / HOW / WHERE?</th><th>RAG connection, failure, debug, interview</th></tr>
+<tr><td>Python / virtualenv / pip</td><td>Interpreter and isolated dependency installer.</td><td>Host <code>myenv</code>; Docker Python 3.11; pinned requirements.</td><td>Supplies all layers; debug versions/build; explain reproducibility.</td></tr>
+<tr><td>FastAPI / Uvicorn</td><td>API framework / ASGI runtime.</td><td>Creates and serves app/routes.</td><td>Begins request flow; debug health/logs; explain typed API boundary.</td></tr>
+<tr><td>Pydantic</td><td>Validation/serialization models.</td><td>Request/response schemas.</td><td>Protects prompt/API inputs; debug 422; explain contracts.</td></tr>
+<tr><td>SQLAlchemy / Psycopg</td><td>Python DB toolkit / PostgreSQL driver.</td><td>Engine, sessions, ORM, SQL URL.</td><td>Persists corpus/chat; debug connection/transactions.</td></tr>
+<tr><td>Alembic</td><td>Schema migration runner.</td><td>Creates tables/vector dimension history.</td><td>Prevents schema drift; run current/upgrade.</td></tr>
+<tr><td>PostgreSQL / pgvector</td><td>Relational DB / vector extension.</td><td>Documents, chunks, embeddings.</td><td>Ranks evidence; debug dimension/index/query.</td></tr>
+<tr><td>Sentence Transformers / PyTorch</td><td>Embedding model/runtime.</td><td>Normalized MiniLM vectors.</td><td>Enables semantic retrieval; debug model/download/shape.</td></tr>
+<tr><td>LangChain splitter</td><td>Recursive text chunker.</td><td>1000 size, 200 overlap.</td><td>Defines retrieval units; debug chunk count.</td></tr>
+<tr><td>python-dotenv</td><td>Loads local environment files.</td><td>main/database/Alembic.</td><td>Selects DB/provider; never print secret values.</td></tr>
+<tr><td>Pytest / HTTPX</td><td>Test runner / TestClient transport dependency.</td><td>Unit, API, DB, controlled retrieval tests.</td><td>Protects contracts; debug focused test/image rebuild.</td></tr>
+<tr><td>Claude Agent SDK</td><td>Optional async Claude execution SDK.</td><td>Executor query/options; external auth.</td><td>Alternative generation path; mock query in tests.</td></tr>
+<tr><td>Ollama</td><td>Local chat model service.</td><td>JSON HTTP provider, default.</td><td>Final grounded generation; debug host networking/model.</td></tr>
+<tr><td>LLMProvider</td><td>Abstract generation interface.</td><td>Ollama/Claude/HF implementations.</td><td>Decouples RAG from transport.</td></tr>
+<tr><td>GrowthAgent/Router</td><td>Application orchestration and intent selection.</td><td>Deterministic routes to skills.</td><td>Connects request to RAG/generation.</td></tr>
+<tr><td>RAG/Ship30/Artifact Skills</td><td>Explicit task boundaries.</td><td>Reuse RAG context, specialize prompts/output.</td><td>Answer, essay, or HTML artifact.</td></tr>
+<tr><td>React/TypeScript</td><td>Frontend client.</td><td>Fetches API, shows sources/skill/artifact.</td><td>Displays final RAG result; debug API/CORS.</td></tr>
+<tr><td>Docker</td><td>Reproducible services/runtime.</td><td>Backend/frontend/Postgres Compose.</td><td>Packages Python and networking; debug health/build.</td></tr>
+<tr><td>Git/GitHub</td><td>Version control/remote collaboration.</td><td>Ignored secrets/data; no commit performed by this task.</td><td>Protects reproducibility; inspect status/diff/check-ignore.</td></tr>
+</table>
+<div class="warning"><b>Final study checkpoint:</b> explain one complete request without opening the code: validated question → session transaction → deterministic skill → query embedding → pgvector threshold → source context → Ollama/Claude generation → assistant persistence → JSON/UI.</div>
+<p class="footer-note">Generated from the current repository on 2026-09-14. This handbook is documentation only and does not change application code.</p>
+</section>
+</body>
+</html>
